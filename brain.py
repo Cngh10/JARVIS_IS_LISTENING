@@ -3,49 +3,31 @@ import threading
 import time
 from validation import record_response, is_repeated_response, clean_response, should_speak_response
 
-# 🔒 THREAD SAFETY
 AI_LOCK = threading.Lock()
 AI_RESPONSE = None
 AI_READY_EVENT = threading.Event()  # Signals when response is ready
 AI_BUSY = False
 
-# 🧠 CHAT HISTORY
 CHAT_HISTORY = []
 
-# 🔁 ANTI-LOOP: Track last response to prevent repetition
 LAST_AI_RESPONSE = None
 
 
 def ask_ai_async(prompt):
-    """
-    🤖 ASYNC AI REQUEST (Iron Man Level)
-    
-    Send prompt to Ollama asynchronously.
-    Uses threading.Event() for proper synchronization.
-    
-    Features:
-    - Non-blocking execution
-    - 30-second timeout
-    - Thread-safe response storage
-    - Error handling with fallback
-    
-    Args:
-        prompt: Question for AI
-    """
+
     global AI_RESPONSE, AI_BUSY, AI_READY_EVENT
 
     with AI_LOCK:
         AI_RESPONSE = None
         AI_BUSY = True
-        AI_READY_EVENT.clear()  # Reset event before starting
-
+        AI_READY_EVENT.clear()  
     def run():
         global AI_RESPONSE, AI_BUSY, AI_READY_EVENT
 
         try:
-            print("🤖 Asking AI...", prompt[:50])
+            print("Asking AI...", prompt[:50])
 
-            # 🔥 CRITICAL: Set timeout for request
+            # Set timeout for request
             res = requests.post(
                 "http://localhost:11434/api/generate",
                 json={
@@ -69,58 +51,40 @@ def ask_ai_async(prompt):
             with AI_LOCK:
                 AI_RESPONSE = response
 
-            print("✅ AI RESPONSE READY:", response[:100])
+            print("AI RESPONSE READY:", response[:100])
 
         except requests.exceptions.Timeout:
-            print("❌ AI TIMEOUT (Ollama not responding)")
+            print("AI TIMEOUT (Ollama not responding)")
             with AI_LOCK:
-                AI_RESPONSE = None  # None = timeout
+                AI_RESPONSE = None  
 
         except requests.exceptions.ConnectionError:
-            print("❌ AI CONNECTION ERROR")
+            print(" AI CONNECTION ERROR")
             with AI_LOCK:
                 AI_RESPONSE = None
 
         except Exception as e:
-            print("❌ AI ERROR:", str(e))
+            print("AI ERROR:", str(e))
             with AI_LOCK:
                 AI_RESPONSE = None
 
         finally:
-            # 🔥 ALWAYS signal that response is ready (even if error)
             AI_READY_EVENT.set()
 
             with AI_LOCK:
                 AI_BUSY = False
 
-    # Start thread as daemon so it doesn't block shutdown
     thread = threading.Thread(target=run, daemon=True)
     thread.start()
 
 
 def get_ai_response():
-    """Get the current AI response (thread-safe)."""
     with AI_LOCK:
         return AI_RESPONSE
 
 
 def wait_for_ai_response(timeout=10):
-    """
-    ⏱️ WAIT FOR AI RESPONSE WITH TIMEOUT (Iron Man Level)
     
-    Blocks until AI responds or timeout occurs.
-    
-    Args:
-        timeout: Maximum seconds to wait (default 10s)
-    
-    Returns:
-        str: AI response, or None if timeout
-        
-    Behavior:
-    - If response arrives before timeout → return response
-    - If timeout occurs → return None (timeout message will be used)
-    """
-    # Wait for signal with timeout
     if AI_READY_EVENT.wait(timeout=timeout):
         # Response ready
         with AI_LOCK:
@@ -135,30 +99,15 @@ def wait_for_ai_response(timeout=10):
 
 
 def is_ai_busy():
-    """Check if AI is still processing."""
     with AI_LOCK:
         return AI_BUSY
 
 
 def process_response(response):
-    """
-    🧹 PROCESS AI RESPONSE (Iron Man Level)
-    
-    Prepares response for output:
-    - Cleans unnecessary text
-    - Removes follow-up questions
-    - Records for anti-loop detection
-    
-    Args:
-        response: Raw AI response
-    
-    Returns:
-        str: Cleaned response
-    """
     if not response:
         return ""
     
-    # Clean response (remove unnecessary suffixes)
+    # Clean response
     cleaned = clean_response(response)
     
     # Record for anti-loop detection
@@ -168,7 +117,6 @@ def process_response(response):
 
 
 def add_to_history(user_input, ai_response):
-    """Add exchange to conversation history (thread-safe)."""
     with AI_LOCK:
         CHAT_HISTORY.append({
             'user': user_input,
@@ -182,20 +130,12 @@ def add_to_history(user_input, ai_response):
 
 
 def wait_for_ai_response(timeout=10):
-    """
-    ⏱ PHASE 20: Wait for AI response with 10-second timeout.
-    
-    If AI doesn't respond within 10 seconds:
-    → Return timeout message: "I am having trouble thinking right now."
-    
-    Returns response or None if timeout.
-    """
-    # Wait for response to be ready (with timeout)
+   
     is_ready = AI_READY_EVENT.wait(timeout=timeout)
 
     if not is_ready:
-        print("❌ AI TIMEOUT: No response within", timeout, "seconds")
-        print("   🎙️ Will respond: 'I am having trouble thinking right now.'")
+        print("AI TIMEOUT: No response within", timeout, "seconds")
+        print(" Will respond: 'I am having trouble thinking right now.'")
         return None
 
     return get_ai_response()
@@ -216,40 +156,20 @@ def get_history():
 
 
 def should_speak_response(response):
-    """
-    🔁 PHASE 20: Anti-loop system
-    
-    Check if response should be spoken or skipped.
-    - Skip if response is too similar to recent responses
-    - Skip if it's a common loop pattern
-    
-    Returns: bool (True = speak, False = skip)
-    """
     if not response:
         return False
     
     if is_repeated_response(response):
-        print("🔁 SKIPPING: Response is too similar to recent output")
+        print("SKIPPING: Response is too similar to recent output")
         return False
     
     return True
 
 
 def process_response(response):
-    """
-    🧹 PHASE 20: Clean and validate AI response
-    
-    - Remove unnecessary follow-up questions
-    - Record response for anti-loop detection
-    - Return clean response
-    """
     if not response:
         return response
-    
-    # Clean response (remove unnecessary follow-ups)
     cleaned = clean_response(response)
     
-    # Record for anti-loop detection
     record_response(cleaned)
-    
     return cleaned
