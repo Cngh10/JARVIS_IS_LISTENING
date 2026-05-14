@@ -1,26 +1,18 @@
-#!/usr/bin/env python3
-"""
-🔍 JARVIS VOICE SYSTEM - COMPREHENSIVE DIAGNOSTIC
-Tests all components of the voice system
-"""
-
 import sounddevice as sd
 import numpy as np
 import sys
 
 print("=" * 70)
-print("🔍 JARVIS VOICE SYSTEM DIAGNOSTIC")
+print("JARVIS VOICE SYSTEM DIAGNOSTIC")
 print("=" * 70)
 
-# ══════════════════════════════════════════════════════════════════════════
 # TEST 1: Check Audio Devices
-# ══════════════════════════════════════════════════════════════════════════
-print("\n📋 TEST 1: Checking Audio Devices")
+print("\nTEST 1: Checking Audio Devices")
 print("-" * 70)
 
 try:
     devices = sd.query_devices()
-    print(f"✅ Found {len(devices)} audio devices:\n")
+    print(f" Found {len(devices)} audio devices:\n")
     
     for i, device in enumerate(devices):
         name = device['name']
@@ -38,17 +30,15 @@ try:
     
     default_input = sd.default.device[0]
     default_output = sd.default.device[1]
-    print(f"\n✅ Default Input Device: {devices[default_input]['name']}")
-    print(f"✅ Default Output Device: {devices[default_output]['name']}")
+    print(f"\n Default Input Device: {devices[default_input]['name']}")
+    print(f" Default Output Device: {devices[default_output]['name']}")
     
 except Exception as e:
-    print(f"❌ Error checking devices: {e}")
+    print(f" Error checking devices: {e}")
     sys.exit(1)
 
-# ══════════════════════════════════════════════════════════════════════════
 # TEST 2: Test Microphone Recording
-# ══════════════════════════════════════════════════════════════════════════
-print("\n🎤 TEST 2: Testing Microphone Recording")
+print("\n TEST 2: Testing Microphone Recording")
 print("-" * 70)
 
 try:
@@ -68,30 +58,28 @@ try:
     audio = recording.flatten()
     audio_level = np.max(np.abs(audio))
     
-    print(f"✅ Recording successful")
+    print(f" Recording successful")
     print(f"   - Samples: {len(audio)}")
     print(f"   - Peak level: {audio_level:.4f}")
     print(f"   - Average level: {np.mean(np.abs(audio)):.4f}")
     
     if audio_level < 0.001:
-        print("\n⚠️  WARNING: Very quiet audio!")
+        print("\n  WARNING: Very quiet audio!")
         print("   - Check microphone is properly connected")
         print("   - Check microphone levels in system settings")
         print("   - Try speaking louder")
     elif audio_level < 0.01:
-        print("\n⚠️  Audio is quiet but might work")
+        print("\n  Audio is quiet but might work")
     else:
-        print("\n✅ Audio level looks good!")
+        print("\n Audio level looks good!")
         
 except Exception as e:
-    print(f"❌ Microphone error: {e}")
+    print(f" Microphone error: {e}")
     print("   - Check microphone is connected")
     print("   - Check sounddevice is installed: pip install sounddevice")
 
-# ══════════════════════════════════════════════════════════════════════════
 # TEST 3: Test Speaker Output
-# ══════════════════════════════════════════════════════════════════════════
-print("\n🔊 TEST 3: Testing Speaker Output")
+print("\n TEST 3: Testing Speaker Output")
 print("-" * 70)
 
 try:
@@ -108,7 +96,7 @@ try:
     sd.play(tone, fs)
     sd.wait()
     
-    print("✅ Speaker test successful!")
+    print(" Speaker test successful!")
     print("   - If you heard a beep, speaker is working")
     print("   - If no sound, check:")
     print("     • Speaker is connected and turned on")
@@ -116,31 +104,27 @@ try:
     print("     • Default output device is correct")
     
 except Exception as e:
-    print(f"❌ Speaker error: {e}")
+    print(f" Speaker error: {e}")
 
-# ══════════════════════════════════════════════════════════════════════════
 # TEST 4: Test Whisper Speech Recognition
-# ══════════════════════════════════════════════════════════════════════════
-print("\n🤖 TEST 4: Testing Speech Recognition (Whisper)")
+print("\n TEST 4: Testing Speech Recognition (Whisper)")
 print("-" * 70)
 
 try:
     import whisper
     print("Loading Whisper model...")
     model = whisper.load_model("small")
-    print("✅ Whisper model loaded")
+    print(" Whisper model loaded")
     
-    print("\n📝 Whisper is ready for speech recognition")
+    print("\n Whisper is ready for speech recognition")
     print("   Run test_voice.py for a live recognition test")
     
 except Exception as e:
-    print(f"❌ Whisper error: {e}")
+    print(f" Whisper error: {e}")
     print("   Install: pip install openai-whisper")
 
-# ══════════════════════════════════════════════════════════════════════════
 # TEST 5: Test pyttsx3 Text-to-Speech
-# ══════════════════════════════════════════════════════════════════════════
-print("\n🎙️  TEST 5: Testing Text-to-Speech (pyttsx3)")
+print("\n  TEST 5: Testing Text-to-Speech (pyttsx3)")
 print("-" * 70)
 
 try:
@@ -150,21 +134,19 @@ try:
     engine = pyttsx3.init()
     engine.setProperty('rate', 180)
     
-    print("✅ TTS engine initialized")
+    print(" TTS engine initialized")
     print("   Rate: 180 words per minute")
     
     print("\nSpeaking: 'Hello, this is a test'")
     engine.say("Hello, this is a test")
     engine.runAndWait()
-    print("✅ Speech successful!")
+    print(" Speech successful!")
     
 except Exception as e:
-    print(f"❌ TTS error: {e}")
+    print(f" TTS error: {e}")
     print("   Install: pip install pyttsx3")
 
-# ══════════════════════════════════════════════════════════════════════════
 # SUMMARY
-# ══════════════════════════════════════════════════════════════════════════
 print("\n" + "=" * 70)
 print("✅ DIAGNOSTIC COMPLETE")
 print("=" * 70)
