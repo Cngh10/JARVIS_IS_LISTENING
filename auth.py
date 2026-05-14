@@ -1,11 +1,3 @@
-"""
-Authentication helpers for voice verification.
-
-This module prefers using `resemblyzer` when available. If the
-dependency is missing, it falls back to a simple permissive
-`verify_voice()` that returns True so the assistant can run.
-"""
-
 try:
     from resemblyzer import VoiceEncoder, preprocess_wav
     import numpy as np
@@ -52,45 +44,14 @@ try:
 
         return similarity > 0.35
 except Exception:
-    print("⚠️ resemblyzer or audio deps missing - voice verification disabled")
+    print(" resemblyzer or audio deps missing  voice verification disabled")
 
     def enroll_voice():
         print("Enroll not available (missing dependencies)")
 
     def verify_voice():
-        # permissive fallback for environments without audio deps
         return True
 
-    # Indicate verification implementation is not available in this environment
     VOICE_VERIFICATION_AVAILABLE = False
 else:
     VOICE_VERIFICATION_AVAILABLE = True
-
-
-
-# from resemblyzer import VoiceEncoder, preprocess_wav
-# import numpy as np
-# import os
-
-# encoder = VoiceEncoder()
-
-# PROFILE_PATH = "voice_profile.npy"
-
-# def enroll_voice(audio_path):
-#     wav = preprocess_wav(audio_path)
-#     embedding = encoder.embed_utterance(wav)
-#     np.save(PROFILE_PATH, embedding)
-#     print("Voice enrolled!")
-
-# def verify_voice(audio_path, threshold=0.75):
-#     if not os.path.exists(PROFILE_PATH):
-#         return True  # fallback for now
-
-#     saved = np.load(PROFILE_PATH)
-#     wav = preprocess_wav(audio_path)
-#     new_emb = encoder.embed_utterance(wav)
-
-#     similarity = np.dot(saved, new_emb)
-#     print("Voice similarity:", similarity)
-
-#     return similarity > threshold
