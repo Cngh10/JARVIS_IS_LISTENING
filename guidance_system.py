@@ -1,15 +1,3 @@
-"""
-🧭 REAL-TIME GUIDANCE SYSTEM (Iron Man Level)
-
-Comprehensive guidance system combining vision and audio sensors.
-Features:
-- Real-time obstacle avoidance
-- Navigation assistance
-- Emergency alerts
-- Environmental awareness
-- Safe path recommendations
-"""
-
 import threading
 import time
 from typing import Optional, Dict, Any, List, Tuple
@@ -20,7 +8,6 @@ from environment_sensor import EnvironmentSensor, Obstacle, Path, DangerLevel
 from audio_sensor import AudioSensor, SoundEvent, SoundType
 
 class UrgencyLevel(Enum):
-    """Urgency levels for guidance"""
     INFO = 0
     LOW = 1
     MEDIUM = 2
@@ -29,7 +16,6 @@ class UrgencyLevel(Enum):
 
 @dataclass
 class Guidance:
-    """Guidance information"""
     message: str
     urgency: UrgencyLevel
     visual_guidance: Optional[str]
@@ -38,34 +24,27 @@ class Guidance:
     confidence: float
 
 class GuidanceSystem:
-    """Real-time guidance system"""
 
     def __init__(self):
-        """Initialize guidance system"""
         self.environment_sensor = EnvironmentSensor()
         self.audio_sensor = AudioSensor()
 
         self.running = False
         self.thread = None
 
-        # Current guidance
         self.current_guidance: Optional[Guidance] = None
         self.guidance_lock = threading.Lock()
 
-        # Guidance history
         self.guidance_history: List[Guidance] = []
         self.history_lock = threading.Lock()
 
-        # Last guidance time (to prevent spam)
         self.last_guidance_time = 0.0
         self.guidance_cooldown = 2.0  # seconds
 
-        # Emergency state
         self.emergency_active = False
         self.emergency_lock = threading.Lock()
 
     def start(self):
-        """Start guidance system"""
         if self.running:
             return
 
@@ -79,10 +58,10 @@ class GuidanceSystem:
             self.thread = threading.Thread(target=self._guidance_loop, daemon=True)
             self.thread.start()
 
-            print("✅ Guidance system started")
+            print("Guidance system started")
 
         except Exception as e:
-            print(f"❌ Failed to start guidance system: {e}")
+            print(f" Failed to start guidance system: {e}")
 
     def stop(self):
         """Stop guidance system"""
@@ -91,13 +70,11 @@ class GuidanceSystem:
             self.thread.join(timeout=1.0)
         self.environment_sensor.stop()
         self.audio_sensor.stop()
-        print("✅ Guidance system stopped")
+        print(" Guidance system stopped")
 
     def _guidance_loop(self):
-        """Main guidance loop"""
         while self.running:
             try:
-                # Get sensor data
                 visual_path = self.environment_sensor.get_path()
                 visual_obstacles = self.environment_sensor.get_obstacles()
                 audio_env = self.audio_sensor.get_current_environment()
@@ -119,7 +96,7 @@ class GuidanceSystem:
                 time.sleep(0.1)
 
             except Exception as e:
-                print(f"❌ Guidance error: {e}")
+                print(f" Guidance error: {e}")
                 time.sleep(0.1)
 
     def _generate_guidance(
@@ -145,14 +122,12 @@ class GuidanceSystem:
         recommended_action = "Continue straight."
         confidence = 0.7
 
-        # Check visual guidance
         if visual_path:
             if not visual_path.clear:
                 urgency = UrgencyLevel.HIGH
                 recommended_action = visual_path.recommended_action
                 visual_msg = visual_path.recommended_action
             else:
-                # Check for nearby obstacles
                 nearby = [o for o in visual_obstacles if o.distance < 2.0]
                 if nearby:
                     closest = nearby[0]
@@ -165,7 +140,6 @@ class GuidanceSystem:
                         recommended_action = f"Warning: {closest.type.value} {closest.distance:.1f}m to your {closest.direction}."
                         visual_msg = recommended_action
 
-        # Check audio guidance
         if audio_env:
             if audio_env.is_emergency:
                 urgency = UrgencyLevel.CRITICAL
@@ -176,7 +150,6 @@ class GuidanceSystem:
                 audio_msg = audio_env.guidance
                 recommended_action = audio_env.guidance
 
-        # Combine messages
         if visual_msg and audio_msg:
             message = f"{visual_msg} {audio_msg}"
         elif visual_msg:
@@ -200,7 +173,6 @@ class GuidanceSystem:
         with self.history_lock:
             self.guidance_history.append(guidance)
 
-            # Keep last 50 entries
             if len(self.guidance_history) > 50:
                 self.guidance_history.pop(0)
 
@@ -215,7 +187,6 @@ class GuidanceSystem:
                 self.emergency_active = False
 
     def get_guidance(self) -> Optional[Guidance]:
-        """Get current guidance"""
         with self.guidance_lock:
             return self.current_guidance
 
@@ -228,7 +199,6 @@ class GuidanceSystem:
         """
         current_time = time.time()
 
-        # Check cooldown
         if current_time - self.last_guidance_time < self.guidance_cooldown:
             # Only return if critical urgency
             guidance = self.get_guidance()
@@ -278,5 +248,4 @@ class GuidanceSystem:
             "guidance": self.get_guidance_message()
         }
 
-# Global instance
 guidance_system = GuidanceSystem()
