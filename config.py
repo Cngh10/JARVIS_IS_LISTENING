@@ -1,0 +1,3 @@
+OPENAI_API_KEY = "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"
+WAKE_WORD = "jarvis"
+PORCUPINE_ACCESS_KEY = "your_porcupine_access_key_here"

@@ -1,0 +1,35 @@
+# JARVIS AI Assistant - Dependencies
+
+# Core
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+websockets==12.0
+pydantic==2.5.0
+python-dotenv==1.0.0
+
+# AI
+anthropic==0.18.0
+openai
+requests==2.31.0
+
+# Voice
+pyttsx3==2.90
+sounddevice==0.4.6
+soundfile==0.12.1
+scipy==1.11.4
+numpy==1.26.2
+openai-whisper==20231117
+SpeechRecognition
+pvporcupine
+vosk
+resemblyzer
+
+# System
+psutil==5.9.6
+
+# Computer Vision
+opencv-python==4.8.1.78
+
+# Utilities
+aiofiles==23.2.1
+python-multipart==0.0.6

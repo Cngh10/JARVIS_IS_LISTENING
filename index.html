@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Jarvis OS</title>
+    <style>
+        body { font-family: Arial; background: black; color: lime; padding: 20px; }
+        h1 { color: cyan; }
+    </style>
+</head>
+<body>
+
+<h1>🧠 Jarvis OS</h1>
+
+<h3>You:</h3>
+<p id="input"></p>
+
+<h3>Jarvis:</h3>
+<p id="output"></p>
+
+<script>
+async function update() {
+    const res = await fetch("http://localhost:8000/status");
+    const data = await res.json();
+
+    document.getElementById("input").innerText = data.input;
+    document.getElementById("output").innerText = data.output;
+}
+
+setInterval(update, 1000);
+</script>
+
+</body>
+</html>
