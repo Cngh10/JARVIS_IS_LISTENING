@@ -1,16 +1,3 @@
-"""
-🚀 JARVIS OS – IRON MAN LEVEL REAL-TIME VOICE AI ASSISTANT
-
-Complete state machine implementation with:
-- 7 operational states (IDLE, LISTENING, WAKE, VERIFICATION, ACTIVE_LISTENING, PROCESSING, RESPONDING)
-- Real-time voice verification
-- Intelligent interrupt handling
-- Priority-based response system
-- Anti-loop detection
-- Clean response mode
-
-This is the main orchestrator for JARVIS.
-"""
 
 from voice import speak, stop_speaking, get_is_speaking
 from commands import execute, is_system_command
@@ -30,31 +17,10 @@ import time
 
 
 def run_jarvis():
-    """
-    🚀 PHASE 20: Main Jarvis OS loop with real-time voice AI system
-    
-    Features:
-    - Input validation (3+ words, garbage filtering)
-    - Interrupt handling (stop, jarvis, wait)
-    - Priority system (INTERRUPT > COMMAND > QUESTION > IGNORE)
-    - Smart AI trigger (only process questions)
-    - 10-second AI timeout
-    - Anti-loop system (prevent repeated responses)
-    - Clean response mode (direct answers only)
-    
-    Flow:
-    1. Listen for valid input (3+ words, not garbage)
-    2. Check for interrupts while speaking
-    3. Detect intent (command vs question)
-    4. Execute with proper priority handling
-    5. Wait for response with timeout
-    6. Speak response (skip if duplicate)
-    7. Loop
-    """
     global state
 
     print("=" * 70)
-    print("🚀 JARVIS PHASE 20 - REAL-TIME VOICE AI SYSTEM")
+    print("JARVIS PHASE 20 - REAL-TIME VOICE AI SYSTEM")
     print("=" * 70)
     print("Features:")
     print("  ✓ Input validation (3+ words, garbage filtering)")
@@ -66,31 +32,26 @@ def run_jarvis():
     print("  ✓ Self-speech filtering (doesn't hear its own voice)")
     print("=" * 70)
 
-    # Start background listener thread
     listener_thread = threading.Thread(target=start_listener, daemon=True)
     listener_thread.start()
 
-    print("✅ Listener started with PHASE 20 filtering")
+    print(" Listener started with PHASE 20 filtering")
     
-    # Give listener a moment to initialize
     time.sleep(0.5)
 
-    # Greet user
-    print("\n🔊 STARTUP: Speaking 'Jarvis is ready'...")
+    print("\n STARTUP: Speaking 'Jarvis is ready'...")
     speak("Jarvis is ready")
     
-    # Give startup message time to be spoken
     time.sleep(2)
-    # Announce listening state (short prompt)
     speak("Listening")
     
     print("\n" + "=" * 70)
-    print("🎤 LISTENING FOR INPUT")
+    print(" LISTENING FOR INPUT")
     print("=" * 70)
     print("Try saying:")
-    print("  • 'hello jarvis' - Get greeting")
-    print("  • 'what is the weather' - Ask a question")
-    print("  • 'remember my name is chandan' - Remember something")
+    print("  'hello jarvis' - Get greeting")
+    print("  'what is the weather' - Ask a question")
+    print("   'remember my name is chandan' - Remember something")
     print("=" * 70 + "\n")
 
     state = JarvisState.LISTENING
@@ -102,42 +63,31 @@ def run_jarvis():
     # If voice verification isn't available, require wake word for every command
     REQUIRE_WAKE_FOR_ALL = not VOICE_VERIFICATION_AVAILABLE
 
-    # ═══════════════════════════════════════════════════════════════
-    # 🔥 MAIN LOOP
-    # ═══════════════════════════════════════════════════════════════
+    #  MAIN LOOP
 
     while True:
         try:
-            # 🎤 GET INPUT (thread-safe)
             current_input = get_latest_input()
 
             lower_input = (current_input or "").lower()
 
-            # Expire active session after timeout
             if active and (time.time() - last_active_time) > VERIFIED_TIMEOUT:
-                print("⏳ Active session expired — require wake word again")
+                print(" Active session expired — require wake word again")
                 active = False
 
-            # Skip if no meaningful input or duplicate
             if not is_valid_input(current_input) or current_input == last_processed_text:
                 time.sleep(0.1)
                 continue
 
-            # Require wake word to start a new session when not active
             if not active and "jarvis" not in (current_input or "").lower():
-                # Ignore ambient speech unless it includes wake word
                 time.sleep(0.05)
                 continue
 
-            # If we must require wake word for every command (no speaker verification),
-            # ignore inputs that don't include the wake word to avoid ambient capture.
             if REQUIRE_WAKE_FOR_ALL and "jarvis" not in lower_input:
                 time.sleep(0.05)
                 continue
 
-            # Strict mode: when verification isn't available, only accept commands
-            # that explicitly contain the wake word even during an active session.
-            # Allow interrupt keywords (stop/wait/etc.) to still interrupt.
+           
             if REQUIRE_WAKE_FOR_ALL and active:
                 interrupts = ["stop", "wait", "hold on", "quiet", "shush", "silence"]
                 if not ("jarvis" in lower_input or any(k in lower_input for k in interrupts)):
@@ -149,12 +99,9 @@ def run_jarvis():
             last_processed_text = current_input
 
             print(f"\n{'='*70}")
-            print(f"📥 INPUT: {current_input}")
+            print(f" INPUT: {current_input}")
             print(f"{'='*70}")
 
-            # ════════════════════════════════════════════════════════
-            # � PHASE 20: INTERRUPT HANDLER
-            # ════════════════════════════════════════════════════════
             if get_is_speaking():
                 # Allow interrupts only from the verified user or when wake word is used.
                 lower_input = (current_input or "").lower()
@@ -164,30 +111,25 @@ def run_jarvis():
                 interrupt_by_keyword = should_interrupt(current_input, currently_speaking=True)
 
                 if interrupt_by_wake or interrupt_by_active or interrupt_by_keyword:
-                    print("🛑 INTERRUPT: Stopping Jarvis for new input")
+                    print(" INTERRUPT: Stopping Jarvis for new input")
                     stop_speaking()
                     # allow processing of this input below
                     pass
                 else:
-                    print("⏭️ Jarvis is speaking, ignoring input")
+                    print(" Jarvis is speaking, ignoring input")
                     time.sleep(0.1)
                     continue
 
-            # ════════════════════════════════════════════════════════
-            # 👋 GREETING RESPONSE (Hello/Hi directed to Jarvis)
-            # Only respond to greetings that include the wake word to avoid false positives
-            # ════════════════════════════════════════════════════════
             lower_input = current_input.lower()
             if any(greeting in lower_input for greeting in ["hello", "hi", "hey"]) and "jarvis" in lower_input:
-                # Treat greeting as wake-word activation; verify before activating
-                print("👋 Greeting to Jarvis detected — verifying voice")
+                print(" Greeting to Jarvis detected — verifying voice")
                 if verify_voice():
                     # Get user name from memory or use default
                     user_name = recall("my name") or "Chandan"
                     first_name = user_name.split()[0] if user_name else "Chandan"
                     greeting_response = f"Hello {first_name}, what's up?"
 
-                    print(f"📢 Greeting: '{greeting_response}'")
+                    print(f" Greeting: '{greeting_response}'")
                     speak(greeting_response)
 
                     # Wait a bit for greeting to complete before continuing
@@ -195,7 +137,7 @@ def run_jarvis():
 
                     active = True  # Activate for follow-up questions
                     last_active_time = time.time()
-                    print("✅ Activated and greeted user")
+                    print(" Activated and greeted user")
                     add_to_history(current_input, greeting_response)
                     clear_latest_input()
                     # Prompt listening state audibly
@@ -208,35 +150,31 @@ def run_jarvis():
                     state = JarvisState.LISTENING
                     continue
 
-            # ════════════════════════════════════════════════════════
-            # 🔑 WAKE WORD DETECTION
-            # ════════════════════════════════════════════════════════
+            # WAKE WORD DETECTION
             if "jarvis" in current_input and not any(g in current_input.lower() for g in ["hello", "hi", "hey"]):
-                print("🔑 Wake word detected")
+                print("Wake word detected")
                 speak("Verifying voice")
 
                 if verify_voice():
                     active = True
                     last_active_time = time.time()
                     speak("Access granted")
-                    print("✅ Voice verified")
+                    print(" Voice verified")
                 else:
                     speak("Access denied")
-                    print("❌ Voice rejected")
+                    print(" Voice rejected")
 
                 # Clear input to prevent reprocessing
                 clear_latest_input()
                 state = JarvisState.LISTENING
                 continue
 
-            # ════════════════════════════════════════════════════════
-            # 😴 SLEEP MODE
-            # ════════════════════════════════════════════════════════
+            # SLEEP MODE
             if "sleep" in current_input or "stop" in current_input:
                 if active:
                     active = False
                     speak("Going to sleep")
-                    print("😴 Jarvis sleeping")
+                    print("Jarvis sleeping")
                     clear_latest_input()
                     state = JarvisState.SLEEPING
 
@@ -247,11 +185,9 @@ def run_jarvis():
                 time.sleep(0.1)
                 continue
 
-            # ════════════════════════════════════════════════════════
-            # 🧠 MEMORY: REMEMBER
-            # ════════════════════════════════════════════════════════
+            #  MEMORY: REMEMBER
             if "remember" in current_input:
-                print("🟡 PRIORITY: Memory command")
+                print(" PRIORITY: Memory command")
                 try:
                     # Format: "remember [key] is [value]"
                     parts = current_input.replace("remember", "").split(" is ")
@@ -260,7 +196,7 @@ def run_jarvis():
                         value = parts[1].strip()
                         remember(key, value)
                         speak(f"Got it. I'll remember that {key} is {value}")
-                        print(f"💾 Remembered: {key} = {value}")
+                        print(f" Remembered: {key} = {value}")
                     else:
                         speak("Please say: remember [key] is [value]")
 
@@ -272,13 +208,11 @@ def run_jarvis():
                 state = JarvisState.LISTENING
                 continue
 
-            # ════════════════════════════════════════════════════════
-            # 🧠 MEMORY: RECALL
-            # ════════════════════════════════════════════════════════
+            # MEMORY: RECALL
             lower_input = current_input.lower()
 
             if "who am i" in lower_input:
-                print("🟡 PRIORITY: Who am I recall")
+                print(" PRIORITY: Who am I recall")
                 # Try different memory keys for name
                 name = recall("my name") or recall("name") or recall("me")
                 if name:
@@ -287,13 +221,13 @@ def run_jarvis():
                     response = "I don't know who you are yet. Tell me and I'll remember."
 
                 speak(response)
-                print(f"📖 Recalled: who am i -> {name}")
+                print(f" Recalled: who am i -> {name}")
                 clear_latest_input()
                 state = JarvisState.LISTENING
                 continue
 
             if "what is my" in current_input:
-                print("🟡 PRIORITY: Recall command")
+                print(" PRIORITY: Recall command")
                 key = current_input.replace("what is my", "").strip()
                 value = recall(key)
 
@@ -305,9 +239,7 @@ def run_jarvis():
                 state = JarvisState.LISTENING
                 continue
 
-            # ════════════════════════════════════════════════════════
-            # ⚙️ PHASE 20: SYSTEM COMMANDS
-            # ════════════════════════════════════════════════════════
+            #  SYSTEM COMMANDS
             if is_system_command(current_input):
                 print("🟢 PRIORITY: Command detected - Executing instantly")
                 state = JarvisState.RESPONDING
@@ -321,65 +253,51 @@ def run_jarvis():
                 clear_latest_input()
                 state = JarvisState.LISTENING
                 continue
-
-            # ════════════════════════════════════════════════════════
-            # 🤖 PHASE 20: AI QUESTION/GENERAL QUERY
-            # ════════════════════════════════════════════════════════
             
             # Only send to AI if it's actually a question
             if not is_question(current_input):
-                print("⏭️ INPUT: Not a question, ignoring")
+                print(" INPUT: Not a question, ignoring")
                 clear_latest_input()
                 state = JarvisState.LISTENING
                 continue
             
-            print("🤖 PRIORITY: Question detected - Sending to AI...")
+            print(" PRIORITY: Question detected - Sending to AI...")
             state = JarvisState.RESPONDING
-
-            # Start AI request
             ask_ai_async(current_input)
 
-            # 🟢 PHASE 20: Wait for AI response with 10-second timeout
             ai_response = wait_for_ai_response(timeout=10)
 
             if not ai_response:
-                # Timeout: use the standard timeout message
                 ai_response = "I am having trouble thinking right now."
-                print("⏱️ PHASE 20: AI TIMEOUT - Using standard response")
+                print(" PHASE 20: AI TIMEOUT - Using standard response")
             else:
-                print(f"✅ AI responded: {ai_response[:100]}")
+                print(f" AI responded: {ai_response[:100]}")
                 
-                # 🧹 PHASE 20: Clean response (remove unnecessary follow-ups)
                 ai_response = process_response(ai_response)
-                print(f"🧹 Cleaned response: {ai_response[:100]}")
+                print(f" Cleaned response: {ai_response[:100]}")
 
-            # 🔊 ALWAYS SPEAK RESPONSE (Anti-loop disabled for better UX)
-            print(f"\n📢 Speaking response...")
+            # ALWAYS SPEAK RESPONSE (Anti-loop disabled for better UX)
+            print(f"\n Speaking response...")
             speak(ai_response)
 
-            # Wait for response to be fully spoken before continuing
-            # This prevents listener from picking up our own speech
             time.sleep(2)
 
             add_to_history(current_input, ai_response)
-            print(f"✅ Response spoken and recorded")
+            print(f" Response spoken and recorded")
 
             # Announce listening state audibly so user knows it's ready
             speak("Listening")
 
-            # ════════════════════════════════════════════════════════
-            # 🔁 BACK TO LISTENING
-            # ════════════════════════════════════════════════════════
             clear_latest_input()
             state = JarvisState.LISTENING
 
         except KeyboardInterrupt:
-            print("\n\n👋 Jarvis shutting down...")
+            print("\n\n Jarvis shutting down...")
             speak("Goodbye")
             break
 
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f" Error: {e}")
             print("Resetting...")
             state = JarvisState.LISTENING
             time.sleep(1)
