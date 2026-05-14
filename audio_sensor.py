@@ -1,16 +1,3 @@
-"""
-🔊 AUDIO ENVIRONMENT SENSING (Iron Man Level)
-
-Real-time audio analysis for environment awareness.
-Features:
-- Sound source localization
-- Noise level monitoring
-- Emergency sound detection (sirens, alarms, etc.)
-- Speech detection
-- Footstep detection
-- Vehicle detection
-"""
-
 import numpy as np
 import sounddevice as sd
 import threading
@@ -93,19 +80,18 @@ class AudioSensor:
         self.running = False
         self.thread = None
 
-        # Audio queue
+       
         self.audio_queue = queue.Queue(maxsize=100)
 
-        # Current environment state
+    
         self.current_environment: Optional[AudioEnvironment] = None
         self.env_lock = threading.Lock()
 
         # Sound detection thresholds
-        self.speech_threshold = 0.3  # Minimum speech intensity
-        self.noise_threshold = 0.1  # Minimum noise intensity
-        self.emergency_threshold = 0.5  # Emergency sound threshold
+        self.speech_threshold = 0.3  
+        self.noise_threshold = 0.1  
+        self.emergency_threshold = 0.5  
 
-        # Frequency ranges for sound types (Hz)
         self.frequency_ranges = {
             SoundType.SPEECH: (300, 3400),
             SoundType.SIREN: (500, 2000),
@@ -116,7 +102,7 @@ class AudioSensor:
             SoundType.GLASS: (2000, 8000),
         }
 
-        # Emergency sound patterns (simplified)
+
         self.emergency_patterns = {
             SoundType.SIREN: [500, 600, 700, 800],  # Alternating frequencies
             SoundType.ALARM: [1000, 1200, 1400],  # Rising frequencies
@@ -130,7 +116,7 @@ class AudioSensor:
         try:
             self.running = True
 
-            # Start audio stream
+
             self.stream = sd.InputStream(
                 channels=self.channels,
                 samplerate=self.sample_rate,
@@ -138,14 +124,13 @@ class AudioSensor:
             )
             self.stream.start()
 
-            # Start processing thread
             self.thread = threading.Thread(target=self._process_loop, daemon=True)
             self.thread.start()
 
-            print("✅ Audio sensing started")
+            print(" Audio sensing started")
 
         except Exception as e:
-            print(f"❌ Failed to start audio sensing: {e}")
+            print(f" Failed to start audio sensing: {e}")
             self.running = False
 
     def stop(self):
@@ -156,18 +141,17 @@ class AudioSensor:
             self.stream.close()
         if self.thread:
             self.thread.join(timeout=1.0)
-        print("✅ Audio sensing stopped")
+        print("Audio sensing stopped")
 
     def _audio_callback(self, indata, frames, time_info, status):
         """Audio stream callback"""
         if status:
             print(f"Audio callback status: {status}")
 
-        # Put audio data in queue
         try:
             self.audio_queue.put_nowait(indata.copy())
         except queue.Full:
-            pass  # Drop if queue is full
+            pass  
 
     def _process_loop(self):
         """Main processing loop"""
@@ -176,7 +160,7 @@ class AudioSensor:
 
         while self.running:
             try:
-                # Get audio data
+ 
                 try:
                     data = self.audio_queue.get(timeout=0.1)
                     buffer.append(data)
@@ -188,19 +172,16 @@ class AudioSensor:
                 if current_duration < buffer_duration:
                     continue
 
-                # Concatenate buffer
                 audio_data = np.concatenate(buffer, axis=0)
                 buffer = []
 
-                # Process audio
                 environment = self._analyze_audio(audio_data)
 
-                # Update environment
                 with self.env_lock:
                     self.current_environment = environment
 
             except Exception as e:
-                print(f"❌ Audio processing error: {e}")
+                print(f" Audio processing error: {e}")
                 time.sleep(0.1)
 
     def _analyze_audio(self, audio_data: np.ndarray) -> AudioEnvironment:
@@ -218,10 +199,8 @@ class AudioSensor:
             rms = np.sqrt(np.mean(audio_data ** 2))
             noise_level_db = 20 * np.log10(rms + 1e-10)
 
-            # Normalize intensity
             intensity = min(rms * 10, 1.0)
 
-            # Perform FFT for frequency analysis
             if len(audio_data.shape) == 2:
                 audio_mono = np.mean(audio_data, axis=1)
             else:
@@ -231,23 +210,17 @@ class AudioSensor:
             frequencies = np.fft.fftfreq(len(audio_mono), 1 / self.sample_rate)
             magnitude = np.abs(fft)
 
-            # Get dominant frequency
             dominant_freq_idx = np.argmax(magnitude[:len(magnitude)//2])
             dominant_frequency = abs(frequencies[dominant_freq_idx])
 
-            # Detect sound type
             sound_type = self._detect_sound_type(dominant_frequency, intensity)
 
-            # Detect direction (using stereo channels)
             direction = self._detect_direction(audio_data)
 
-            # Check for emergency sounds
             is_emergency = self._is_emergency_sound(sound_type, dominant_frequency, intensity)
 
-            # Check for speech
             is_speech = self._is_speech(audio_data, dominant_frequency, intensity)
 
-            # Create sound event
             sound_event = SoundEvent(
                 type=sound_type,
                 direction=direction,
@@ -258,7 +231,6 @@ class AudioSensor:
                 confidence=0.7
             )
 
-            # Generate guidance
             guidance = self._generate_guidance(sound_event, is_emergency, noise_level_db)
 
             return AudioEnvironment(
@@ -271,7 +243,7 @@ class AudioSensor:
             )
 
         except Exception as e:
-            print(f"❌ Audio analysis error: {e}")
+            print(f" Audio analysis error: {e}")
             return AudioEnvironment(
                 noise_level=0.0,
                 dominant_sound=None,
@@ -315,11 +287,9 @@ class AudioSensor:
         if len(audio_data.shape) < 2 or audio_data.shape[1] < 2:
             return SoundDirection.UNKNOWN
 
-        # Calculate energy in each channel
         left_energy = np.mean(audio_data[:, 0] ** 2)
         right_energy = np.mean(audio_data[:, 1] ** 2)
 
-        # Compare energies
         if left_energy > right_energy * 1.5:
             return SoundDirection.LEFT
         elif right_energy > left_energy * 1.5:
@@ -356,13 +326,11 @@ class AudioSensor:
         Returns:
             True if speech detected
         """
-        # Check frequency range
         speech_min, speech_max = self.frequency_ranges[SoundType.SPEECH]
 
         if not (speech_min <= frequency <= speech_max):
             return False
 
-        # Check intensity
         if intensity < self.speech_threshold:
             return False
 
@@ -422,5 +390,4 @@ class AudioSensor:
 
         return env.guidance
 
-# Global instance
 audio_sensor = AudioSensor()
