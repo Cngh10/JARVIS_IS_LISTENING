@@ -8,20 +8,17 @@ try:
 except Exception:
     kit = None
     KIT_AVAILABLE = False
-    print("⚠️ pywhatkit not available - WhatsApp features will be disabled")
+    print("pywhatkit not available - WhatsApp features will be disabled")
 
-# -----------------------------
-# 📲 CONTACTS (EDIT THIS)
-# -----------------------------
+
 CONTACTS = {
-    "sam": "+9779818503936",
-    "chandan": "+9779818503936"
+    "sam": "+97798185*****",
+    "chandan": "+97798185*****"
+    "gmail": "itssinghchandan10@gmail.com"
 }
 
 
-# -----------------------------
-# 🧠 COMMAND DETECTION
-# -----------------------------
+# COMMAND DETECTION
 def is_system_command(command):
     command = command.lower()
 
@@ -37,15 +34,11 @@ def is_system_command(command):
     return any(word in command for word in keywords)
 
 
-# -----------------------------
-# 🚀 EXECUTE COMMAND
-# -----------------------------
+# EXECUTE COMMAND
 def execute(command):
     command = command.lower()
 
-    # -----------------------------
-    # 🌐 OPEN APPS
-    # -----------------------------
+    # OPEN APPS
     if "open chrome" in command:
         os.system("open -a 'Google Chrome'")
         return "Opening Chrome"
@@ -66,9 +59,7 @@ def execute(command):
         webbrowser.open("https://google.com")
         return "Opening Google"
 
-    # -----------------------------
-    # 🎯 PLAY YOUTUBE
-    # -----------------------------
+    # PLAY YOUTUBE
     if "play" in command and "youtube" in command:
         query = command.replace("play", "").replace("on youtube", "").strip()
 
@@ -80,9 +71,7 @@ def execute(command):
 
         return f"Playing {query} on YouTube"
 
-    # -----------------------------
-    # 🔍 SEARCH YOUTUBE
-    # -----------------------------
+    # SEARCH YOUTUBE
     if "search youtube for" in command:
         query = command.replace("search youtube for", "").strip()
 
@@ -94,9 +83,7 @@ def execute(command):
 
         return f"Searching YouTube for {query}"
 
-    # -----------------------------
-    # 🔍 GOOGLE SEARCH
-    # -----------------------------
+    # GOOGLE SEARCH
     if "search google for" in command:
         query = command.replace("search google for", "").strip()
 
@@ -108,13 +95,9 @@ def execute(command):
 
         return f"Searching Google for {query}"
 
-    # -----------------------------
-    # 📲 WHATSAPP MESSAGE
-    # -----------------------------
+    #  WHATSAPP MESSAGE
     if "send message" in command:
         try:
-            # Example:
-            # "send message to sam saying hello bro"
             match = re.search(r"send message to (.+?) saying (.+)", command)
 
             if match:
@@ -144,9 +127,7 @@ def execute(command):
             print("WhatsApp error:", e)
             return "Failed to send message"
 
-    # -----------------------------
-    # 🔊 VOLUME
-    # -----------------------------
+    # VOLUME
     if "volume up" in command:
         os.system("osascript -e 'set volume output volume (output volume of (get volume settings) + 10)'")
         return "Increasing volume"
@@ -163,12 +144,10 @@ def execute(command):
         os.system("osascript -e 'set volume output muted false'")
         return "Unmuted"
 
-    # -----------------------------
-    # 🔒 SYSTEM CONTROL
-    # -----------------------------
+    #  SYSTEM CONTROL
     if "lock" in command:
         os.system("/System/Library/CoreServices/Menu\\ Extras/User.menu/Contents/Resources/CGSession -suspend")
-        return "Locking your Mac"
+        return "Locking your Mac/windows"
 
     if "sleep" in command:
         os.system("pmset sleepnow")
@@ -182,9 +161,7 @@ def execute(command):
         os.system("sudo shutdown -h now")
         return "Shutting down system"
 
-    # -----------------------------
-    # 🔍 FALLBACK SEARCH
-    # -----------------------------
+    # FALLBACK SEARCH
     if "search" in command:
         query = command.replace("search", "").strip()
 
