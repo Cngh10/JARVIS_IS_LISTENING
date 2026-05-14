@@ -1,109 +1,69 @@
-"""
-🤖 JARVIS STATE MACHINE - Iron Man Level AI Assistant
-
-This module implements the complete state machine for JARVIS OS:
-- 7 distinct states with transitions
-- Real-time context tracking
-- Interrupt priority system
-- Voice verification flow
-- Active listening mode
-
-States:
-1. IDLE - Not active, low power mode
-2. LISTENING - Passive wake-word detection
-3. WAKE - Wake word detected, preparing verification
-4. VOICE_VERIFICATION - Comparing voice profile
-5. ACTIVE_LISTENING - Ready for commands, live preview
-6. PROCESSING - Analyzing intent and routing
-7. RESPONDING - Speaking response or executing command
-"""
-
 import threading
 from enum import Enum
 from datetime import datetime
 from dataclasses import dataclass
 
-# ═══════════════════════════════════════════════════════════════════════════
-# 🎯 STATE DEFINITIONS
-# ═══════════════════════════════════════════════════════════════════════════
 
 class JarvisState(Enum):
-    """JARVIS operational states"""
-    IDLE = "idle"                           # Not active
-    LISTENING = "listening"                 # Passive wake-word detection
-    WAKE = "wake"                           # Wake word detected
-    VOICE_VERIFICATION = "voice_verification"  # Verifying speaker identity
-    ACTIVE_LISTENING = "active_listening"   # Ready for full input
-    PROCESSING = "processing"               # Analyzing input
-    RESPONDING = "responding"               # Speaking or executing
-    INTERRUPTING = "interrupting"           # User interrupted us
+    IDLE = "idle"                         
+    LISTENING = "listening"                
+    WAKE = "wake"                    
+    VOICE_VERIFICATION = "voice_verification" 
+    ACTIVE_LISTENING = "active_listening"   
+    PROCESSING = "processing"               
+    RESPONDING = "responding"          
+    INTERRUPTING = "interrupting"        
 
 
 class IntentType(Enum):
-    """Intent classification"""
     INTERRUPT = "interrupt"      # Stop what you're doing (stop, wait, jarvis)
-    COMMAND = "command"          # Execute action (open chrome, play music)
-    QUESTION = "question"        # Ask AI something (what is, why does)
-    MEMORY = "memory"            # Remember/recall
-    NOISE = "noise"              # Background noise, ignore
-    WAKE_WORD = "wake_word"      # Wake word detected
+    COMMAND = "command"         
+    QUESTION = "question"       
+    MEMORY = "memory"            
+    NOISE = "noise"              
+    WAKE_WORD = "wake_word"      
 
 
 class Priority(Enum):
-    """Response priority (higher number = higher priority)"""
     NOISE = 0                    # Ignore
     QUESTION = 1                 # Send to AI
     COMMAND = 2                  # Execute system command
     INTERRUPT = 3                # Stop everything immediately
 
 
-# ═══════════════════════════════════════════════════════════════════════════
-# 🧠 STATE CONTEXT
-# ═══════════════════════════════════════════════════════════════════════════
+#  STATE CONTEXT
 
 @dataclass
 class InputContext:
-    """Tracks current input context"""
-    raw_text: str                           # Original speech recognition text
-    cleaned_text: str                       # Cleaned/normalized text
-    intent: IntentType                      # Classified intent
-    priority: Priority                      # Action priority
-    timestamp: float                        # When this input arrived
-    is_verified: bool = False               # User identity verified
-    user_name: str = "User"                 # Identified user
-    confidence: float = 1.0                 # AI confidence in this input
+    raw_text: str                           
+    cleaned_text: str             
+    intent: IntentType           ]
+    priority: Priority            
+    timestamp: float            
+    is_verified: bool = False
+    user_name: str = "User"                ]
+    confidence: float = 1.0                
 
 
 @dataclass
 class StateContext:
     """Tracks JARVIS state and context"""
-    current_state: JarvisState               # Current operational state
-    previous_state: JarvisState              # Previous state
-    is_speaking: bool = False                # Currently outputting audio
-    user_active: bool = False                # User engaged with system
-    voice_verified: bool = False             # Voice ID successful
-    session_start: float = 0                 # Session start time
-    last_response: str = ""                  # Last output to user
-    response_history: list = None            # Recent responses
+    current_state: JarvisState              
+    previous_state: JarvisState            
+    is_speaking: bool = False                
+    user_active: bool = False             
+    voice_verified: bool = False             
+    session_start: float = 0
+    last_response: str = ""                 
+    response_history: list = None            
     
     def __post_init__(self):
         if self.response_history is None:
             self.response_history = []
 
 
-# ═══════════════════════════════════════════════════════════════════════════
-# 🔒 THREAD-SAFE STATE MANAGER
-# ═══════════════════════════════════════════════════════════════════════════
 
 class StateMachine:
-    """
-    Thread-safe state machine for JARVIS OS.
-    
-    Guarantees:
-    - Atomic state transitions
-    - Correct interrupt priorities
-    - Clean state management
-    """
     
     def __init__(self):
         self._lock = threading.RLock()
@@ -121,9 +81,6 @@ class StateMachine:
         # State transition callbacks
         self._callbacks = {}
         
-    # ───────────────────────────────────────────────────────────────────
-    # 📊 STATE GETTERS (Thread-Safe)
-    # ───────────────────────────────────────────────────────────────────
     
     def get_state(self) -> JarvisState:
         """Get current state (thread-safe)"""
@@ -150,9 +107,7 @@ class StateMachine:
         with self._lock:
             return self.state
     
-    # ───────────────────────────────────────────────────────────────────
-    # 🔄 STATE TRANSITIONS
-    # ───────────────────────────────────────────────────────────────────
+    #  STATE TRANSITIONS
     
     def transition_to(self, new_state: JarvisState, reason: str = ""):
         """
@@ -210,23 +165,17 @@ class StateMachine:
             self._callbacks[state] = []
         self._callbacks[state].append(callback)
     
-    # ───────────────────────────────────────────────────────────────────
-    # 🗣️ SPEAKING STATE
-    # ───────────────────────────────────────────────────────────────────
-    
+
     def set_speaking(self, is_speaking: bool):
         """Update speaking state (thread-safe)"""
         with self._lock:
             self.state.is_speaking = is_speaking
             if is_speaking:
-                print("🎤 Speaking started")
+                print(" Speaking started")
             else:
-                print("🎤 Speaking ended")
+                print(" Speaking ended")
     
-    # ───────────────────────────────────────────────────────────────────
-    # 🔐 VERIFICATION STATE
-    # ───────────────────────────────────────────────────────────────────
-    
+
     def set_verified(self, verified: bool, user_name: str = "User"):
         """Update verification state (thread-safe)"""
         with self._lock:
@@ -234,13 +183,10 @@ class StateMachine:
             self.state.user_name = user_name
             self.state.user_active = verified
             if verified:
-                print(f"✅ Voice verified: {user_name}")
+                print(f" Voice verified: {user_name}")
             else:
-                print(f"❌ Voice verification failed")
+                print(f" Voice verification failed")
     
-    # ───────────────────────────────────────────────────────────────────
-    # 📝 RESPONSE TRACKING
-    # ───────────────────────────────────────────────────────────────────
     
     def record_response(self, response: str):
         """Record response for anti-loop detection (thread-safe)"""
@@ -260,16 +206,14 @@ class StateMachine:
         with self._lock:
             return self.state.response_history.copy()
     
-    # ───────────────────────────────────────────────────────────────────
-    # 📊 DIAGNOSTICS
-    # ───────────────────────────────────────────────────────────────────
+    #  DIAGNOSTICS
     
     def get_status(self) -> str:
         """Get human-readable status"""
         with self._lock:
             status = f"""
 ╔═══════════════════════════════════════════════════════════╗
-║            🤖 JARVIS STATE MACHINE STATUS               ║
+║             JARVIS STATE MACHINE STATUS               ║
 ╠═══════════════════════════════════════════════════════════╣
 ║ State:          {self.state.current_state.value:40} ║
 ║ Speaking:       {str(self.state.is_speaking):40} ║
@@ -277,14 +221,11 @@ class StateMachine:
 ║ Active:         {str(self.state.user_active):40} ║
 ║ User:           {self.state.user_name:40} ║
 ║ Last Response:  {self.state.last_response[:40]:40} ║
-╚═══════════════════════════════════════════════════════════╝
+
             """
             return status
 
 
-# ═══════════════════════════════════════════════════════════════════════════
-# 🌍 GLOBAL STATE MACHINE INSTANCE
-# ═══════════════════════════════════════════════════════════════════════════
 
 _global_state_machine = None
 
