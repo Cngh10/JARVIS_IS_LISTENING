@@ -1,15 +1,3 @@
-"""
-🌐 JARVIS WEB SERVER (Iron Man Level)
-
-FastAPI server for web interface communication.
-Features:
-- WebSocket for real-time voice/audio streaming
-- REST API for text-based interaction
-- System command execution
-- Voice authentication
-- State management
-"""
-
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -25,14 +13,12 @@ from auth import verify_voice, VOICE_VERIFICATION_AVAILABLE
 from memory import remember, recall
 from state_machine import JarvisState
 
-# 🚀 FASTAPI APP
 app = FastAPI(
     title="JARVIS AI Assistant",
     version="2.0.0",
     description="Iron Man level voice AI assistant"
 )
 
-# 🌐 CORS MIDDLEWARE
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -41,10 +27,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 📡 ACTIVE CONNECTIONS
 active_connections: List[WebSocket] = []
 
-# 📊 REQUEST MODELS
 class ChatRequest(BaseModel):
     message: str
     context: Optional[Dict[str, Any]] = None
@@ -60,9 +44,7 @@ class MemoryRequest(BaseModel):
 class VoiceVerifyRequest(BaseModel):
     audio_data: Optional[str] = None
 
-# ═══════════════════════════════════════════════════════════════
-# 🏠 ROOT ENDPOINTS
-# ═══════════════════════════════════════════════════════════════
+# ROOT ENDPOINTS
 
 @app.get("/")
 async def root():
@@ -102,17 +84,10 @@ async def status():
         "history_length": len(claude_engine.get_history())
     }
 
-# ═══════════════════════════════════════════════════════════════
-# 💬 CHAT ENDPOINTS
-# ═══════════════════════════════════════════════════════════════
+# CHAT ENDPOINTS
 
 @app.post("/chat")
 async def chat(request: ChatRequest):
-    """
-    Chat endpoint for text-based interaction
-
-    Handles both system commands and AI queries.
-    """
     try:
         user_input = request.message.strip()
 
@@ -122,7 +97,6 @@ async def chat(request: ChatRequest):
                 "error": "Empty message"
             }
 
-        # Check if this is a system command
         if is_system_command(user_input):
             result = execute(user_input)
             return {
@@ -135,7 +109,6 @@ async def chat(request: ChatRequest):
         # Send to Claude AI
         ask_ai_async(user_input)
 
-        # Wait for response with timeout
         ai_response = wait_for_ai_response(timeout=15)
 
         if not ai_response:
@@ -172,9 +145,7 @@ async def execute_command(request: CommandRequest):
             "error": str(e)
         }
 
-# ═══════════════════════════════════════════════════════════════
-# 🧠 MEMORY ENDPOINTS
-# ═══════════════════════════════════════════════════════════════
+# MEMORY ENDPOINTS
 
 @app.post("/memory/remember")
 async def remember_endpoint(request: MemoryRequest):
@@ -207,9 +178,7 @@ async def recall_endpoint(key: str):
             "error": str(e)
         }
 
-# ═══════════════════════════════════════════════════════════════
-# 🔐 VOICE AUTHENTICATION
-# ═══════════════════════════════════════════════════════════════
+# VOICE AUTHENTICATION
 
 @app.post("/auth/verify")
 async def verify_voice_endpoint(request: VoiceVerifyRequest):
@@ -226,10 +195,6 @@ async def verify_voice_endpoint(request: VoiceVerifyRequest):
             "success": False,
             "error": str(e)
         }
-
-# ═══════════════════════════════════════════════════════════════
-🔊 SPEECH CONTROL
-# ═══════════════════════════════════════════════════════════════
 
 @app.post("/speech/speak")
 async def speak_endpoint(request: ChatRequest):
@@ -261,9 +226,7 @@ async def stop_speech_endpoint():
             "error": str(e)
         }
 
-# ═══════════════════════════════════════════════════════════════
-# 📡 WEBSOCKET ENDPOINT
-# ═══════════════════════════════════════════════════════════════
+# WEBSOCKET ENDPOINT
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -369,15 +332,11 @@ async def websocket_endpoint(websocket: WebSocket):
             "message": str(e)
         })
 
-# ═══════════════════════════════════════════════════════════════
-# 🚀 MAIN
-# ═══════════════════════════════════════════════════════════════
-
 if __name__ == "__main__":
     import uvicorn
 
     print("=" * 70)
-    print("🚀 JARVIS WEB SERVER")
+    print("JARVIS WEB SERVER")
     print("=" * 70)
     print(f"Claude Available: {claude_engine.is_available()}")
     print(f"Voice Auth Available: {VOICE_VERIFICATION_AVAILABLE}")
