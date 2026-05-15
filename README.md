@@ -247,7 +247,7 @@ python3 verify_system.py
 
 ---
 
-## ❓ FAQ
+## FAQ
 
 ### **Q: Does it require internet?**
 **A:** No. Everything runs locally. Web commands (YouTube, Google) require internet.
@@ -303,7 +303,7 @@ python3 verify_system.py
 3. **Read the Logs**
    ```bash
    # Terminal output shows error messages
-   # Look for ❌ marks to find issues
+   # Look for marks to find issues
    ```
 
 4. **Isolate the Problem**
@@ -362,10 +362,10 @@ This project is created for educational purposes.
 
 ## 🎉 You're All Set!
 
-1. ✅ Code is fixed and ready
-2. ✅ All critical issues resolved
-3. ✅ Documentation is comprehensive
-4. ✅ Testing guidelines provided
+1.  Code is fixed and ready
+2.  All critical issues resolved
+3.  Documentation is comprehensive
+4.  Testing guidelines provided
 
 **Next steps:**
 1. Run `python3 verify_system.py`
